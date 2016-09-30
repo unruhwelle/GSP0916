@@ -12,7 +12,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT p_Type, WPARAM p_WParam, LPARAM p_LPara
 	return DefWindowProc(hWnd, p_Type, p_WParam, p_LParam);
 }
 
-void System::Init()
+void System::InitWindow()
 {
 	// Erstellen der Windowclass
 	// Windowclass ist quasi ein Fensterbauplan
@@ -41,7 +41,7 @@ void System::Init()
 	AdjustWindowRect(&_WindowRect, WS_OVERLAPPEDWINDOW, false);
 
 	// Fenster erzeugen
-	HWND _Wnd = CreateWindowEx(0,
+	m_Window = CreateWindowEx(0,
 		"WindowBauplan",
 		"Mein erstes Fenster",
 		WS_OVERLAPPEDWINDOW,
@@ -56,15 +56,61 @@ void System::Init()
 
 
 	// Fenster anzeigen
-	ShowWindow(_Wnd, SW_SHOWDEFAULT);
+	ShowWindow(m_Window, SW_SHOWDEFAULT);
+}
+
+
+void System::InitGraphics()
+{
+	// Swapchain and Device
+	D3D_FEATURE_LEVEL _FeatureLevel = D3D_FEATURE_LEVEL::D3D_FEATURE_LEVEL_11_0;
+	D3D_FEATURE_LEVEL _FeatureLevelOut;
+
+
+	DXGI_SWAP_CHAIN_DESC _SCD;
+	ZeroMemory(&_SCD, sizeof(_SCD));
+	_SCD.BufferCount = 1;
+	_SCD.BufferDesc.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM;
+	_SCD.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	_SCD.OutputWindow = m_Window;
+	_SCD.Windowed = true;
+	_SCD.SampleDesc.Count = 4;
+
+	HRESULT _Result = D3D11CreateDeviceAndSwapChain(
+		nullptr,
+		D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE,
+		nullptr,
+		0, //D3D11_CREATE_DEVICE_FLAG::D3D11_CREATE_DEVICE_DEBUG
+		&_FeatureLevel, 1,
+		D3D11_SDK_VERSION,
+		&_SCD,
+		&m_pSwapChain,
+		&m_pGraphicsDevice,
+		&_FeatureLevelOut,
+		&m_pDeviceContext);
+
+	ID3D11Texture2D* m_pSwapChainBuffer;
+	m_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&m_pSwapChainBuffer);
+
+	m_pGraphicsDevice->CreateRenderTargetView(m_pSwapChainBuffer, nullptr, &m_pScreen);
+
+}
+
+void System::Init()
+{
+	InitWindow();
+	InitGraphics();
 }
 
 
 int System::Run()
 {
+
+
 	int QuitCode = 0;
 	bool Running = true;
 	MSG _msg;
+	int Frames = 0;
 
 	while (Running)
 	{
@@ -73,7 +119,7 @@ int System::Run()
 		{
 			TranslateMessage(&_msg);
 			DispatchMessage(&_msg);
-		
+
 			if (_msg.message == WM_QUIT)
 			{
 				QuitCode = _msg.wParam;
@@ -83,9 +129,26 @@ int System::Run()
 
 
 
-		// Frame Updaten 10 ms
+		// Frame Updaten
 
-		// Frame zeichnen 30 ms
+		// Frame zeichnen
+
+		Frames++;
+
+		float _Color[4];
+		_Color[0] = (rand() % 256) / 256.0f;
+		_Color[1] = (rand() % 256) / 256.0f;
+		_Color[2] = (rand() % 256) / 256.0f;
+		_Color[3] = 1;
+
+		m_pDeviceContext->ClearRenderTargetView(m_pScreen, _Color);
+
+		// Scene Rendern
+
+		m_pSwapChain->Present(0, 0);
+
+		if (Frames > 10000)
+			Running = false;
 	}
 
 	// Resourcen wieder freigeben

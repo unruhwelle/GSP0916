@@ -16,6 +16,9 @@
     <Filter Include="Source Files\System">
       <UniqueIdentifier>{f1543039-6a12-4fc9-81d3-54345f23c54b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utility">
+      <UniqueIdentifier>{3a306dc4-d37f-4570-be86-c52ddffed649}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -28,6 +31,9 @@
   <ItemGroup>
     <ClInclude Include="System.h">
       <Filter>Source Files\System</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dinclude.h">
+      <Filter>Source Files\Utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
